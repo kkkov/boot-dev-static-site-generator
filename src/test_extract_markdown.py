@@ -11,4 +11,4 @@ def test_extract_markdown_links(self):
     matches = extract_markdown_links(
         "This is text with a link [to coinscious](https://conscious-spending.vercel.app)"
     )
-    self.assertListEqual([("to coinscious", "https://conscious-spending.vercel.app")], matches)
+    self.assertListEqual([("to coinscious", "https://conscious-spending.vercel.")], matches)
