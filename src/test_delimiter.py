@@ -5,8 +5,13 @@ from textnode import TextNode, TextType
 class TestTextNodeDelimiter(unittest.TestCase):
     def test_delimiter(self):
         node = TextNode("This is simply a text node", TextType.TEXT)
-        with self.assertRaises(Exception):
-            split_nodes_delimiter([node], "`", TextType.CODE)
+        node_delimited = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(
+            node_delimited,
+            [
+                TextNode("This is simply a text node", TextType.TEXT),
+            ],
+        )
 
         node2 = TextNode("This is a **bold text** node", TextType.TEXT)
         node2_delimited = split_nodes_delimiter([node2], "**", TextType.BOLD)
