@@ -1,7 +1,7 @@
 from enum import Enum
 from inline_markdown import text_to_textnodes
 from htmlnode import HTMLNode, LeafNode, ParentNode
-from textnode import text_node_to_html_node
+from textnode import text_node_to_html_node, TextType, TextNode
 import re
 
 from htmlnode import HTMLNode
@@ -46,22 +46,25 @@ def block_type_to_html_node(block, block_type) -> HTMLNode:
     lines = block.split("\n")
     if block_type == BlockType.HEADING:
         level = len(block) - len(block.lstrip('#'))
-        return HTMLNode(f"h{level}", text_to_children(block[level+1:])
+        return ParentNode(f"h{level}", text_to_children(block[level+1:]))
     elif block_type == BlockType.CODE:
-        code = [HTMLNode("code", block[4:-3] + "\n")]
-        return HTMLNode("pre", code)
+        raw = TextNode(block[4:-3], TextType.CODE)
+        code = [text_node_to_html_node(raw)]
+        return ParentNode("pre", code)
     elif block_type == BlockType.QUOTE:
         cleaned = [line.lstrip(">").strip() for line in lines]
-        return HTMLNode("blockquote", " ".join(cleaned))
+        return ParentNode("blockquote", text_to_children(" ".join(cleaned)))
     elif block_type == BlockType.UNORDERED_LIST:
-        li = [HTMLNode("li", line[2:]) for line in lines]
-        return HTMLNode("ul", None, li)
+        li = [ParentNode("li", text_to_children(line[2:])) for line in lines]
+        return ParentNode("ul", li)
     elif block_type == BlockType.ORDERED_LIST:
-        li = [HTMLNode("li", line.split(". ", 1)[1]) for line in lines]
-        return HTMLNode("ol", None, li)
+        li = [ParentNode("li", text_to_children(line.split(". ", 1)[1])) for line in lines]
+        return ParentNode("ol", li)
     elif block_type == BlockType.PARAGRAPH:
         cleaned = block.replace("\n", " ")
-        return HTMLNode("p", cleaned)
+        return ParentNode("p", text_to_children(cleaned))
+    else:
+        raise ValueError("invalid block type")
 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
@@ -69,4 +72,4 @@ def markdown_to_html_node(markdown):
     for block in blocks:
         block_type = block_to_block_type(block)
         html_nodes.append(block_type_to_html_node(block, block_type))
-    
+    return ParentNode("div", html_nodes)    
